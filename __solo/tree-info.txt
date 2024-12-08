@@ -1,0 +1,28 @@
+nivel 0 -> __solo
+----------
+> Descripción:
+-------------
+El file contiene toda la estructura del tipo de juego "solo", en el cual el jugador puedo explorar 'casi' todas las características
+del juego. Se puede decir que en este modo de juego se compite con uno mismo.
+
+nivel 1 
+-------
+-> _dado-solo-game	:: implementación del juego en python, ...
+-> _doc-solo-game	:: documentación de la implementación del juego.
+-> logica		:: contiene todos los aspectos teóricos (de desarrollo lógico) del juego.
+-> manual		:: contiene toda la información necesaria para enseñar a jugar dado.
+-> tree-info.txt	:: (ARCHIVO ACTUAL) en el cual se explica toda la jerarquía y breve información de los ficheros
+
+nivel - 2 :-> _dado-solo-game
+---------
+
+nivel - 2 :-> _doc-solo-game
+---------
+
+nivel - 2 :-> logica
+---------
+
+nivel - 2 :-> manual
+---------
+
+
