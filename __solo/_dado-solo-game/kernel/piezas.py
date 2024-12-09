@@ -1,9 +1,108 @@
 """Contiene todas las piezas móviles del juego"""
 
-from typing import Literal, Tuple
-
-import _importaciones as _imp
+from typing import Literal, Tuple, Callable
 from random import sample, randint, choice
+
+# Tipos de datos
+list_dtipo = Literal['f1','f2', 'f3', 'f1*', 'f2*', 'f3*', 'fp']           # Tipos de dados según su forma
+list_dir_mv = Literal['u', 'd', 'r', 'l']                                  # Dirección del movimiento
+tipo_dim = Tuple[int, int]
+
+# Variables globales
+vg_dtipo = ('f1','f2', 'f3', 'f1*', 'f2*', 'f3*', 'fp')
+vg_dtipo_b = ('f1','f2', 'f3')
+vg_dtipo_e = ('f1*', 'f2*', 'f3*', 'fp')
+vg_dparametros = {        # tipo de dado <-> parámetros para la creación
+    'f1': ((1,5), (3,3), (0,1,0,1,1,1,0,1,0), 5),
+    'f2': ((1,6), (4,3), (0,1,0,1,1,1,0,1,0,0,1,0), 6),
+    'f3': ((1,6), (3,4), (0,1,0,0,1,1,1,1,0,1,0,0), 6),
+    'f1*': (3,3),
+    'f2*': (4,3),
+    'f3*': (3,4)
+}
+
+# validaciones para los parámetros de creación de dados
+def _valForma(forma: list_dtipo,                       # forma a validar
+              dim: tipo_dim = None
+              ):
+    """Validación de la forma
+    La forma tiene una estructura propia y aparte se puede validar con
+    respecto a la dimensión.
+    Devuelve la misma forma si es compatible con la dimensión o 
+    devuelve la forma más compatible con la dimensión.
+    
+    (!) Se supone que la dim tiene una forma válida."""
+
+    # Validación de forma
+    if forma not in vg_dtipo: forma = 'fp'         # El valor no es valido => se pasa un valor genérico de forma
+    
+    # Validación con respecto a la dimensión
+    for c, v in vg_dparametros.items():
+        if len(v) > 2:
+            if v[1] == dim and forma == c: return forma
+            elif v[1] == dim: return c
+        else:
+            if v == dim and forma == c: return forma
+            elif v == dim: return c
+
+    return forma
+
+def _valDim(dim: tipo_dim,
+            forma: list_dtipo = None,
+            posic_v: Tuple = None,
+            n_caras: int = None
+            ):
+    """Validación para dimensión del dado
+    La dimensión tiene que ser una tupla de enteros positivos.
+    La dimensión la podemos validar con respecto a la forma,
+    con respecto a la posición de los valores o al número de caras.
+
+    (!) Orden de prioridad: forma -> posición -> n_caras 
+    
+    OUTPUT:
+    -------
+    Se ajusta al parámetro"""
+    
+    # Validación según la forma
+    if len(dim) == 2 and type(dim[0]) == int and dim[0] > 0 and type(dim[1]) == int and dim[1] > 0: dim = (3,3)
+    
+    # Validación con respecto a la forma:
+    if forma != None:
+        for c, v in vg_dparametros.items():
+            if c == forma:
+                if len(v) > 2: return v[1]
+                else: return v
+        return dim
+
+    # Validación según la posición
+    if posic_v != None:
+        if len(posic_v) == dim[0]*dim[1]: return dim
+        else:
+            # Buscar los factores primos de la longitud de posic_v
+            i = 2
+            factores = []
+            while i * i <= len(posic_v):
+                if n % i: i+= 1
+                else:
+                    n //= i
+                    factores.append(i)
+    
+    # Validación según el número de caras
+    
+            
+
+def _valInterV(*, **deps):
+    """Validación para intervalos de valores"""
+    pass
+
+def _valPosSec():
+    """Validación para la posición de las caras en secuencia"""
+    pass
+
+def _valNumCaras():
+    """Validación para el número de caras activas"""
+
+
 
 class _PiezaMovil:
     """Clase abstracta
@@ -16,32 +115,84 @@ class _PiezaMovil:
     cond_captura: int = None
 
     def _gCoord(self, 
-                rango: int | tuple[int, int]
+                rango: int | Tuple[int, int]
                 ) -> tuple[int, int]:   # Generador de coordenadas
         if type(rango) == int:
-            return _imp.randint(1,rango), _imp.randint(rango)
+            return randint(1,rango), randint(rango)
         elif type(rango) == tuple and len(rango) == 2:
-            return _imp.randint(rango[0], rango[1]), _imp.randint(rango[0], rango[1])
+            return randint(rango[0], rango[1]), randint(rango[0], rango[1])
     
     def unPaso(self, 
-               dir_mv: _imp.dir_mv = 'd'):
+               dir_mv: dir_mv = 'd'):
         print("Solo hago esto.")
 
 
 class Dado(_PiezaMovil):
     """"""
 
-    f_dado: _imp.f_dado = 'f1'                              # Forma del dado
-    r_valores = _imp.fd_rvalor[f_dado][2]                   # Rango de valores de las caras
+    def __init__(self,
+            *inter_v: int | Tuple[int,int],
+            dtipo: list_dtipo = None,
+            dim: Tuple[int,int] = None,
+            posic_sec: Tuple = None,
+            n_caras: int = None
+        ) -> None:
+        """"""
+
+        self._inter_v = inter_v
+        self._dtipo = dtipo
+        self._dim = dim
+        self._posic_sec = posic_sec
+        self._n_caras = n_caras
+
+        self.sec_valores = []
+        self._matrix_valores = []
+
+        # Caso 1: dtipo es básico
+        if dtipo in vg_dtipo_b:
+            # En caso de que no se pasen intervalos de valores
+            if len(inter_v) == 0: self._inter_v = vg_dparametros[dtipo][0]
+            # En caso de que se pasaran intervalos de valores
+            elif len(inter_v) == 2:
+                pass
+
+            # No se permiten cambios de dimensión
+            if dim != vg_dparametros[dtipo][1]: self._dim = vg_dparametros[dtipo][1]
+            # No se permiten cambios de posición
+            if posic_sec != vg_dparametros[dtipo][2]: self._posic_sec = vg_dparametros[dtipo][2]
+            # No se permiten cambios de números de caras
+            if n_caras != vg_dparametros[dtipo][3]: self._n_caras = vg_dparametros[dtipo][3]
+
+            
+
+         
+
+        # Validación para el caso en el que si 
+
+        # Estableciendo parámetros para la creación según el tipo de dato
+
+            
+
+        self.coord = self._gCoord(rango=rango)      # Coordenadas iniciales
+        self._valores_caras_sec, self.valores_cara = self._gValores(forma=forma)    # Valores de las caras
+        
+        # Modificar los métodos traídos del padre
+        self.unPaso = self._unPasoDado(self.unPaso)     # unPaso()
+
+        # actualizamos los demás atributos
+        self._aAtributos()
 
     def _gValores(self,
                   *inter_v: Tuple,                          # intervalo de valores
                   n_caras: int = None,                      # número de caras con valores
                   posic_sec: Tuple = None,                  # Posiciones de los valores en secuencia
                   dim: Tuple[int, int] = None,              # Dimensiones de la pieza
-                  forma: _imp.f_dado = None,                # Formas predeterminadas
-                  ) -> tuple:             
+                  forma: formas_dado = None,                # Formas predeterminadas
+                  ) -> tuple:            
         """"""
+
+        # Caso 1: cuando forma toma un valor básico
+
 
         # > Validación de parámetros
         # Caso: no se especifica una forma y se deben pasar todos los demás argumentos
@@ -124,14 +275,6 @@ class Dado(_PiezaMovil):
 
         return matrix_valores, sec_valores
 
-       
-
-            
-
-
-
-
-    
     def _aAtributos(self) -> None:      # Actualizador de atributos
         # Actual. self._estado
         # Actual. self.cantidad_caras
@@ -139,7 +282,7 @@ class Dado(_PiezaMovil):
         pass
 
     # Decorador del método unPaso()
-    def _unPasoDado(self, funcion: _imp.Callable):
+    def _unPasoDado(self, funcion: Callable):
         def funcionDecorada():
             print()
             resutlado = funcion()
@@ -147,47 +290,26 @@ class Dado(_PiezaMovil):
             return resutlado
         return funcionDecorada
 
-    """
-    def __init__(self,
-            forma: _imp.f_dado = 'f1',
-            rango: int | tuple[int, int] = None
-        ) -> None:
-        """"""
 
-        # Definiendo el rango de valores según la forma del dado
-        # ya que no fue pasado ningún rango
-        if rango == None:
-            match forma:
-                case 'f1': rango = (1,5)
-                case 'f2': rango = (1,6)
-                case _: return "ERROR: Valor de forma no valido."
-            
-
-        self.coord = self._gCoord(rango=rango)      # Coordenadas iniciales
-        self._valores_caras_sec, self.valores_cara = self._gValores(forma=forma)    # Valores de las caras
-        
-        # Modificar los métodos traídos del padre
-        self.unPaso = self._unPasoDado(self.unPaso)     # unPaso()
-
-        # actualizamos los demás atributos
-        self._aAtributos()
-        """
     
 
 if __name__ == "__main__":
     """
-    dado1 = Dado('f2')
-    print("\nValores de las Caras: ")
-    for i in dado1.valores_cara: print(i)
-    print("Valores de las caras en secuencia: ", dado1._valores_caras_sec)
-    print("Condición de captura: ", dado1.cond_captura)
-    print()
-    
+    El resultado fila:
 
-    pieza1 = _PiezaMovil()
-    pieza1.unPaso(dir_mv='d')
+    <Caso 1> - Dado Básico
+    pieza1 = Dado() -> un dado de la forma f1, f2 , f3
 
-    dado1 = Dado((1,6))
-    dado1.unPaso(dir_mv='d')
+    <caso 2> - Dado Básico
+    pieza2 = Dado((2,5), 9) -> un dado de la forma f1, pero con los valores de las caras [2-5, 9]
+
+    <caso 3> - Dado Esp.
+    pieza3 = Dado(posic_sec=(0,0,1,0,1,1,1,0,1)) -> modificar la posición (f1*)
+
+    <caso 4> - Dado Esp.
+    pieza4 = Dado(n_caras=4) -> seleccionar un numero de caras diferente al tipo (f1*)
+
+    <caso 4.1> - Dado Esp.
+    pieza41 = Dado(n_caras=5) -> la posición viene elegida en manera aleatoria (f1*)
     """
 
