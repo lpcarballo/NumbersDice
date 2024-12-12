@@ -10,15 +10,18 @@ NIVEL 1
 
 -> .venv		:: Contiene un entorno de desarrollo de python
 -> .vscode		:: Configuraciones de VSC
--> interfaz-grafica	:: la implementción gráfica de solo
--> kernel		:: toda la extructura lógica del juego
+-> consola		:: la implementación gráfica de numbersdice (consola)
+-> kernel		:: piezas físicas del juego
 -> ejecutable.py	:: sería el conector de la lógica y lo visual, aparte de que ejecutaría el juego
 -> tree-info.txt	:: ARCHIVO ACTUAL
 
 NIVEL 2 :-> "kernel"
 -------
 -> _importaciones.py	:: contiene todos los módulos importados y las variables globales
--> mj_sum.py		    :: Modo de Juego - sum
--> piezas.py		    :: el módulo pieza, creará las Piezas Moviles del Juego
--> tablero.py		    :: el módulo tablero, creará los tableros del juego
--> temp_prueba_codigo	:: archivo temporal que se utiliza solo para provar codigo
+-> modos-juego		:: modos de juego
+-> piezas.py		:: contiene las piezas móviles del Juego
+-> objetos.py		:: contiene a las piezas inmóviles del juego
+-> mapa.py		:: contiene los mapas del juego
+-> _tablero.py		:: el módulo tablero, creará los tableros del juego
+-> valores.py		:: todos los valores que definin parámetros del juego
+-> temp_prueba_codigo	:: archivo temporal que se utiliza solo para provar código
